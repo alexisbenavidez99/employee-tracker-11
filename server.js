@@ -164,7 +164,7 @@ function addEmployee() {
       {
         type: 'input',
         message: 'What is the FIRST NAME of the employee you want to add?',
-        name: addEmployeeFirtName
+        name: addEmployeeFirstName
       }
     ])
   inquirer
@@ -220,6 +220,11 @@ function addEmployee() {
         ]
       }
     ])
+    .then((answers) => {
+      db.query('SELECT VALUE = ? AS manager', (answers.addEmployeeManager), function (err, results) {
+        err ? console.err(err) : console.table(results)
+      })
+    })
     options();
 }
 
