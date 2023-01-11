@@ -33,25 +33,25 @@ function options() {
         }
     ])
     .then((answers) => {
-      if (menuInput === 'View all departments') {
+      if (answers.menuInput === 'View all departments') {
         viewDepartments();
       }
-      else if (menuInput === 'View all roles') {
+      else if (answers.menuInput === 'View all roles') {
         viewRoles();
       }
-      else if (menuInput === 'View all employees') {
+      else if (answers.menuInput === 'View all employees') {
         viewEmployees();
       }
-      else if (menuInput === 'Add a department') {
+      else if (answers.menuInput === 'Add a department') {
         addDepartment();
       }
-      else if (menuInput === 'Add a role') {
+      else if (answers.menuInput === 'Add a role') {
         addRole();
       }
-      else if (menuInput === 'Add an employee') {
+      else if (answers.menuInput === 'Add an employee') {
         addEmployee();
       }
-      else if (menuInput === 'Update an employee role') {
+      else if (answers.menuInput === 'Update an employee role') {
         updateEmployeeRole();
       }
     })
@@ -91,9 +91,15 @@ function addDepartment() {
       }
     ])
     .then((answers) => {
-      db.query('INSERT INTO department(name) VALUES = ?', (answers.addDepartment), function (err, results) {
-        err ? console.err(err) : console.table(results)
-        options();
+      db.query('INSERT INTO department(name) VALUES(?)', answers.addDepartment, function (err, results) {
+        if (err) {
+          console.log(err)
+        } else {
+          db.query('SELECT * FROM department', function (err, results) {
+            err ? console.err(err) : console.table(results)
+            options();
+          })
+        }
       })
     })
 };
@@ -101,7 +107,7 @@ function addDepartment() {
 function addRole() {
   const department = () => db.promise().query('SELECT * FROM department')
     .then((rows) => {
-        let departmentNames = rows[0].map(obj => obj.departmentNames);
+        let departmentNames = rows[0].map(obj => obj.name);
         return departmentNames;
   })
   inquirer
@@ -124,7 +130,7 @@ function addRole() {
       }
     ])
     .then((answers) => {
-      db.promise().query('INSERT INTO role(title) VALUES = ?, ?, ?', (answers.addRole, answers.addRoleSalary, answers.addRoleDepartment), function (err, results) {
+      db.promise().query('INSERT INTO role(title) VALUES(?, ?, ?)', [answers.addRole, answers.addRoleSalary, answers.addRoleDepartment], function (err, results) {
         err ? console.err(err) : console.table(results)
         options();
       })
@@ -161,7 +167,7 @@ function addEmployee() {
         choices: role
       },
       {
-        type: list,
+        type: 'list',
         message: 'Who is the manager of this employee?',
         name: 'addEmployeeManager',
         choices: employee
@@ -173,4 +179,33 @@ function addEmployee() {
         options();
       })
     })
+}
+
+function updateEmployeeRole() {
+  const employee = () => db.promise().query('SELECT * FROM employee')
+    .then((rows) => {
+        let employeeNames = rows[0].map(obj => obj.employeeNames);
+        return employeeNames;
+  })
+  const role = () => db.promise().query('SELECT * FROM role')
+    .then((rows) => {
+        let roleNames = rows[0].map(obj => obj.roleNames);
+        return roleNames;
+  })
+  inquirer
+    .prompt([
+      {
+        type: 'list',
+        message: `Which employee's role do you want to update?`,
+        name: 'updateEmployeeName',
+        choices: employee
+      },
+      {
+        type: 'list',
+        message: 'What role do you want to assign to the selected employee?',
+        name: 'updateEmployeeRole',
+        choices: role
+      }
+    ])
+    .then
 }
