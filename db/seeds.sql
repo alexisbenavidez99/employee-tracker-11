@@ -13,3 +13,13 @@ VALUES ("Sales Lead", 1, 90000),
        ("Paralegal", 3, 60000),
        ("Senior Engineer", 4, 190000),
        ("Software Engineer", 4, 112000);
+
+INSERT INTO employee (first_name, last_name)
+VALUES ("Kenny", "Singh"),
+       ("Janice", "Golden"),
+       ("Barrett", "Cannon"),
+       ("Grant", "Morgan"),
+       ("Debbie", "Becker"),
+       ("Emanuel", "Suarez"),
+       ("Taylor", "Raymond"),
+       ("Marissa", "Peters");
