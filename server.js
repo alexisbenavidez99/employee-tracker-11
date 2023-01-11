@@ -130,9 +130,15 @@ function addRole() {
       }
     ])
     .then((answers) => {
-      db.promise().query('INSERT INTO role(title) VALUES(?, ?, ?)', [answers.addRole, answers.addRoleSalary, answers.addRoleDepartment], function (err, results) {
-        err ? console.err(err) : console.table(results)
-        options();
+      db.promise().query('INSERT INTO role(title, salary, department_id) VALUES(?, ?, ?)', [answers.addRole, answers.addRoleSalary, answers.addRoleDepartment], function (err, results) {
+        if (err) {
+          console.log(err)
+        } else {
+          db.query('SELECT * FROM department', function (err, results) {
+            err ? console.err(err) : console.table(results)
+            options();
+          })
+        }
       })
     })
 };
@@ -140,12 +146,12 @@ function addRole() {
 function addEmployee() {
   const role = () => db.promise().query('SELECT * FROM role')
     .then((rows) => {
-        let roleNames = rows[0].map(obj => obj.roleNames);
+        let roleNames = rows[0].map(obj => obj.title);
         return roleNames;
   })
   const employee = () => db.promise().query('SELECT * FROM employee')
     .then((rows) => {
-        let employeeNames = rows[0].map(obj => obj.employeeNames);
+        let employeeNames = rows[0].map(obj => obj.first_name && obj.last_name);
         return employeeNames;
   })
   inquirer
@@ -174,9 +180,15 @@ function addEmployee() {
       }
     ])
     .then((answers) => {
-      db.query('INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES = ?, ?, ?, ?', (answers.addEmployeeFirstName, answers.addEmployeeLastName, answers.addEmployeeRole, answers.addEmployeeManager), function (err, results) {
-        err ? console.err(err) : console.table(results)
-        options();
+      db.query('INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES(?, ?, ?, ?)', [answers.addEmployeeFirstName, answers.addEmployeeLastName, answers.addEmployeeRole, answers.addEmployeeManager], function (err, results) {
+        if (err) {
+          console.log(err)
+        } else {
+          db.query('SELECT * FROM employee', function (err, results) {
+            err ? console.err(err) : console.table(results)
+            options();
+          })
+        }
       })
     })
 }
@@ -184,12 +196,12 @@ function addEmployee() {
 function updateEmployeeRole() {
   const employee = () => db.promise().query('SELECT * FROM employee')
     .then((rows) => {
-        let employeeNames = rows[0].map(obj => obj.employeeNames);
+        let employeeNames = rows[0].map(obj => obj.first_name);
         return employeeNames;
   })
   const role = () => db.promise().query('SELECT * FROM role')
     .then((rows) => {
-        let roleNames = rows[0].map(obj => obj.roleNames);
+        let roleNames = rows[0].map(obj => obj.title);
         return roleNames;
   })
   inquirer
