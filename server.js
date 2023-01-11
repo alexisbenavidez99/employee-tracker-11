@@ -1,7 +1,6 @@
-const { default: inquirer } = require('inquirer');
 const mysql = require('mysql2');
+const consoleTable = require('console.table');
 const inquirer = require('inquirer');
-const { listenerCount } = require('mysql2/typings/mysql/lib/Connection');
 
 const db = mysql.createConnection(
     {
@@ -11,7 +10,7 @@ const db = mysql.createConnection(
       database:'tracker_db'
     },
     console.log('Connected to the tracker_db database')
-)
+);
 
 // Inquirer Questions
 function options() {
@@ -64,22 +63,22 @@ options();
 function viewDepartments() {
   db.query('SELECT * FROM department', function (err, results) {
     err ? console.err(err) : console.table(results) 
+    options();
   })
-  options();
 };
 
 function viewRoles() {
   db.query('SELECT * FROM role', function (err, results) {
     err ? console.err(err) : console.table(results)
+    options();
   })
-  options();
 };
 
 function viewEmployees() {
   db.query('SELECT * FROM employee', function (err, results) {
     err ? console.err(err) : console.table(results)
+    options();
   })
-  options();
 };
 
 function addDepartment() {
@@ -88,148 +87,90 @@ function addDepartment() {
       {
         type: 'input',
         message: 'What department would you like to add?',
-        name: addDepartment
+        name: 'addDepartment'
       }
     ])
     .then((answers) => {
       db.query('INSERT INTO department(name) VALUES = ?', (answers.addDepartment), function (err, results) {
         err ? console.err(err) : console.table(results)
+        options();
       })
     })
-    options();
 };
 
 function addRole() {
-  inquirer
-    .prompt([
-      {
-        type: 'choices',
-        message: 'What role would you like to add?',
-        name: addRole,
-        choices: [
-          'Sales Lead',
-          'Salesperson',
-          'Trainer',
-          'HR Compliance',
-          'Lawyer',
-          'Paralegal',
-          'Senior Engineer',
-          'Software Engineer'
-        ]
-      }
-    ])
-    .then((answers) => {
-      db.query('INSERT INTO role(title) VALUES = ?', (answers.addRole), function (err, results) {
-        err ? console.err(err) : console.table(results)
-      })
-    })
+  const department = () => db.promise().query('SELECT * FROM department')
+    .then((rows) => {
+        let departmentNames = rows[0].map(obj => obj.departmentNames);
+        return departmentNames;
+  })
   inquirer
     .prompt([
       {
         type: 'input',
-        message: 'What is the salary of the role?',
-        name: addRoleSalary
-      }
-    ])
-    .then((answers) => {
-      db.query('INSERT INTO role(salary) VALUES = ?', (answers.addRoleSalary), function (err, results) {
-        err ? console.err(err) : console.table(results)
-      })
-    })
-  inquirer
-    .prompt([
+        message: 'What role would you like to add?',
+        name: 'addRole'
+      },
       {
-        type: list,
-        message: 'What department does the role belong to?',
-        name: addRoleDepartment,
-        choices: [
-          'Sales',
-          'Human Resources',
-          'Legal',
-          'Engineering'
-        ]
+        type: 'input',
+        message: 'What is the salary of the role?',
+        name: 'addRoleSalary'
+      },
+      {
+        type: 'list',
+        message: 'What department does this role belong to?',
+        name: 'addRoleDepartment',
+        choices: department
       }
     ])
     .then((answers) => {
-      db.query('INSERT INTO department_id VALUES = ?', (answers.addRoleDepartment), function (err, results) {
+      db.promise().query('INSERT INTO role(title) VALUES = ?, ?, ?', (answers.addRole, answers.addRoleSalary, answers.addRoleDepartment), function (err, results) {
         err ? console.err(err) : console.table(results)
+        options();
       })
     })
-    options();
 };
 
 function addEmployee() {
+  const role = () => db.promise().query('SELECT * FROM role')
+    .then((rows) => {
+        let roleNames = rows[0].map(obj => obj.roleNames);
+        return roleNames;
+  })
+  const employee = () => db.promise().query('SELECT * FROM employee')
+    .then((rows) => {
+        let employeeNames = rows[0].map(obj => obj.employeeNames);
+        return employeeNames;
+  })
   inquirer
     .prompt([
       {
         type: 'input',
         message: 'What is the FIRST NAME of the employee you want to add?',
-        name: addEmployeeFirstName
-      }
-    ])
-  inquirer
-    .prompt([
+        name: 'addEmployeeFirstName'
+      },
       {
         type: 'input',
         message: 'What is the LAST NAME of the employee you want to add?',
-        name: addEmployeeLastName
-      }
-    ])
-    .then((answers) => {
-      db.query('INSERT INTO employee(first_name) VALUES = ?', (answers.addEmployeeFirstName), function (err, results) {
-        err ? console.err(err) : console.table(results)
-      })
-    })
-    .then((answers) => {
-      db.query('INSERT INTO employee(last_name) VALUES = ?', (answers.addEmployeeLastName), function (err, results) {
-        err ? console.err(err) : console.table(results)
-      })
-    })
-  inquirer
-    .prompt([
+        name: 'addEmployeeLastName'
+      },
       {
-        type: 'What is the employees role?',
-        name: addEmployeeRole,
-        choices: [
-          'Sales',
-          'Human Resources',
-          'Legal',
-          'Engineering'
-        ]
-      }
-    ])
-    .then((answers) => {
-      db.query('INSERT INTO employee(role_id) VALUES = ?', (answers.addEmployeeRole), function (err, results) {
-        err ? console.err(err) : console.table(results)
-      })
-    })
-  inquirer
-    .prompt([
+        type: 'list',
+        message: `What is this employee's role?`,
+        name: 'addEmployeeRole',
+        choices: role
+      },
       {
-        type: `Who is the employee's manager?`,
-        name: addEmployeeManager,
-        choices: [
-          'Kenny Singh',
-          'Janice Golden',
-          'Barrett Cannon',
-          'Grant Morgan',
-          'Debbie Becker',
-          'Emanuel Suarez',
-          'Taylor Raymond',
-          'Marissa Peters'
-        ]
+        type: list,
+        message: 'Who is the manager of this employee?',
+        name: 'addEmployeeManager',
+        choices: employee
       }
     ])
     .then((answers) => {
-      db.query('SELECT VALUE = ? AS manager', (answers.addEmployeeManager), function (err, results) {
+      db.query('INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES = ?, ?, ?, ?', (answers.addEmployeeFirstName, answers.addEmployeeLastName, answers.addEmployeeRole, answers.addEmployeeManager), function (err, results) {
         err ? console.err(err) : console.table(results)
+        options();
       })
     })
-    options();
 }
-
-function updateEmployeeRole() {
-
-}
-
-
