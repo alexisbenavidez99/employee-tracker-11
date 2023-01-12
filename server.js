@@ -107,7 +107,10 @@ function addDepartment() {
 function addRole() {
   const department = () => db.promise().query('SELECT * FROM department')
     .then((rows) => {
-        let departmentNames = rows[0].map(obj => obj.name);
+        let departmentNames = rows[0].map(obj => ({
+          name: obj.name,
+          value: obj.id
+        }));
         return departmentNames;
   })
   inquirer
@@ -130,6 +133,7 @@ function addRole() {
       }
     ])
     .then((answers) => {
+      console.log(answers.addRoleDepartment);
       db.promise().query('INSERT INTO role(title, salary, department_id) VALUES(?, ?, ?)', [answers.addRole, answers.addRoleSalary, answers.addRoleDepartment], function (err, results) {
         if (err) {
           console.log(err)
@@ -151,7 +155,10 @@ function addEmployee() {
   })
   const employee = () => db.promise().query('SELECT * FROM employee')
     .then((rows) => {
-        let employeeNames = rows[0].map(obj => obj.first_name && obj.last_name);
+        let employeeNames = rows[0].map(obj => ({
+          name: `${obj.first_name} ` + `${obj.last_name}`,
+          value: obj.manager_id
+        }));
         return employeeNames;
   })
   inquirer
