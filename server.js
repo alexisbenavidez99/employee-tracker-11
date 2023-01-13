@@ -111,6 +111,7 @@ function addRole() {
           name: obj.name,
           value: obj.id
         }));
+        console.log(departmentNames);
         return departmentNames;
   })
   inquirer
@@ -133,15 +134,16 @@ function addRole() {
       }
     ])
     .then((answers) => {
-      console.log(answers.addRoleDepartment);
-      db.promise().query('INSERT INTO role(title, salary, department_id) VALUES(?, ?, ?)', [answers.addRole, answers.addRoleSalary, answers.addRoleDepartment], function (err, results) {
-        if (err) {
-          console.log(err)
-        } else {
+      db.promise().query('INSERT INTO role(title, salary, department_id) VALUES(?, ?, ?)', [answers.addRole, answers.addRoleSalary, answers.addRoleDepartment])
+      .then(function (results) {
           db.query('SELECT * FROM department', function (err, results) {
             err ? console.err(err) : console.table(results)
             options();
           })
+      })
+      .catch(err => {
+        if (err) {
+          console.log(err);
         }
       })
     })
@@ -150,14 +152,17 @@ function addRole() {
 function addEmployee() {
   const role = () => db.promise().query('SELECT * FROM role')
     .then((rows) => {
-        let roleNames = rows[0].map(obj => obj.title);
+        let roleNames = rows[0].map(obj => ({
+          name: obj.title,
+          value: obj.id
+        }));
         return roleNames;
   })
   const employee = () => db.promise().query('SELECT * FROM employee')
     .then((rows) => {
         let employeeNames = rows[0].map(obj => ({
           name: `${obj.first_name} ` + `${obj.last_name}`,
-          value: obj.manager_id
+          value: obj.id
         }));
         return employeeNames;
   })
@@ -187,14 +192,17 @@ function addEmployee() {
       }
     ])
     .then((answers) => {
-      db.query('INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES(?, ?, ?, ?)', [answers.addEmployeeFirstName, answers.addEmployeeLastName, answers.addEmployeeRole, answers.addEmployeeManager], function (err, results) {
-        if (err) {
-          console.log(err)
-        } else {
+      console.log(answers);
+      db.promise().query('INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES(?, ?, ?, ?)', [answers.addEmployeeFirstName, answers.addEmployeeLastName, answers.addEmployeeRole, answers.addEmployeeManager])
+      .then(function (results) {
           db.query('SELECT * FROM employee', function (err, results) {
             err ? console.err(err) : console.table(results)
             options();
           })
+      })
+      .catch(err => {
+        if (err) {
+          console.log(err)
         }
       })
     })
