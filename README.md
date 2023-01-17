@@ -10,6 +10,12 @@ A MySQL back-end application that tracks employee's roles, salaries, and manager
 - Inquirer
 - console.table
 
+## Installation
+- Clone repo down to your local machine
+- In server.js file, change the password in createConnection to you MySQL password
+- Open intergrated terminal and install `inquirer`, `mysql2` and `console.table`.
+- Run `node server.js`
+
 ## Usage
 ```
 GIVEN a command-line application that accepts user input
