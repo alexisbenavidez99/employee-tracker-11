@@ -209,7 +209,12 @@ function addEmployee() {
 function updateEmployeeRole() {
   const employee = () => db.promise().query('SELECT * FROM employee')
     .then((rows) => {
-        let employeeNames = rows[0].map(obj => obj.first_name);
+        let employeeNames = rows[0].map(
+          ({ id, first_name, last_name }) => ({
+            name: `${first_name} ${last_name}`,
+            value: id
+          })
+        );
         return employeeNames;
   })
   const role = () => db.promise().query('SELECT * FROM role')
@@ -234,12 +239,12 @@ function updateEmployeeRole() {
     ])
     .then((answers) => {
       db.promise().query('SELECT id FROM role WHERE title = ?', answers.updateEmployeeRole)
-      .then(answer => {
-        let foundId = answer[0].map(obj => obj.id);
+      .then(answers => {
+        let foundId = answers[0].map(obj => obj.id);
         return foundId[0];
       })
       .then((foundId) => {
-        db.query('UPDATE employee SET role_id = ? WHERE id = ?', [foundId, answers.updateEmployeeRole])
+        db.query('UPDATE employee SET role_id = ? WHERE id = ?', [foundId, answers.updateEmployeeName])
       })
       .then(function (results) {
         db.query('SELECT * FROM employee', function (err, results) {
@@ -247,10 +252,10 @@ function updateEmployeeRole() {
           options();
         })
     })
-    .catch(err => {
-      if (err) {
-        console.log(err)
-      }
-    })
+      .catch(err => {
+        if (err) {
+          console.log(err)
+        }
+      })
     })
 }
