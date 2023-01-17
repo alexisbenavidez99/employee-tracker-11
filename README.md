@@ -38,6 +38,7 @@ THEN I am prompted to select an employee to update and their new role and this i
 ```
 
 ## Preview
+[Employee-Tracker-Demo.webm](https://user-images.githubusercontent.com/113260005/212796034-807c4a02-a64f-471e-9ab4-9dfb15f2b724.webm)
 
 ## License
 See license in repo
